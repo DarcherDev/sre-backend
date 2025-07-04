@@ -24,7 +24,7 @@ public class PersonaService {
     private final IPersonaRepository iPersonaRepository;
 
     /**
-     * Constructor de la clase TechnicalService.
+     * Constructor de la clase PersonaService.
      *
      * @param iPersonaMapper Mapper para convertir entidades a DTOs y viceversa.
      * @param iPersonaRepository Repositorio para el acceso a persona.
@@ -64,7 +64,7 @@ public class PersonaService {
      * @return Mapa con un mensaje de confirmación de la operación.
      * @throws PersonaException Si el persona con el ID proporcionado no existe.
      */
-    public Map<String, Object> deleteTechnical(Long id) {
+    public Map<String, Object> deletePersona(Long id) {
 
         PersonaModel existingPersona = this.iPersonaRepository.findById(id)
                 .orElseThrow(() -> new PersonaException(
@@ -84,7 +84,7 @@ public class PersonaService {
      * @return {@link Optional} que contiene el {@link PersonaDto} actualizado si la operación es exitosa.
      * @throws PersonaException Si el persona con el ID proporcionado no existe.
      */
-    public Optional<PersonaDto> updateTechnical(PersonaDto personaDto) {
+    public Optional<PersonaDto> updatePersona(PersonaDto personaDto) {
 
         // realiza las validacion de los campos de los persona
         validatePersonaDto(personaDto);
@@ -128,10 +128,7 @@ public class PersonaService {
         if (ValidationUtil.validateEmail(PersonaDto.getEmail())) {
             throw new PersonaException(HttpStatus.PRECONDITION_FAILED, PersonaConstants.FORMATO_CORREO);
         }
-        if (ValidationUtil.isNullOrEmpty(PersonaDto.getPhone())) {
-            throw new PersonaException(HttpStatus.PRECONDITION_FAILED, PersonaConstants.TELEFONO_REQUERIDO);
-        }
-        if (ValidationUtil.esNumeroValido(PersonaDto.getPhone())) {
+        if (!ValidationUtil.esNumeroValido(PersonaDto.getPhone())) {
             throw new PersonaException(HttpStatus.PRECONDITION_FAILED, PersonaConstants.FORMATO_TELEFONO);
         }
 

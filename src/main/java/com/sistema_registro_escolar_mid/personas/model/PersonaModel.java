@@ -43,7 +43,9 @@ public class PersonaModel {
     @Column(name = "pe_email", unique=true)
     private String email;
 
+    @NotNull
     @Size(min = 1, max = 15)
     @Column(name = "pe_telefono")
     private String phone;
+
 }

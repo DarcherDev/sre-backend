@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class ValidationUtil {
     private static final String CORREO_PATTERN = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-    private static final String TELEFONO_PATTERN = "^3\\d*$";
+    private static final String TELEFONO_PATTERN = "^3\\d{9}$";
     private static final Pattern CORREO_REGEX = Pattern.compile(CORREO_PATTERN);
 
     public static boolean isNullOrEmpty(String value) {
@@ -30,13 +30,13 @@ public class ValidationUtil {
      */
     public static boolean esNumeroValido(String input) {
         // Verifica si es numérico y comienza con 3
-        return input != null && input.matches(TELEFONO_PATTERN);
+        return !isNullOrEmpty(input) && input.matches(TELEFONO_PATTERN);
     }
 
     /**
-     Valida si una fecha en formato dd/MM/yyyy no es una fecha futura.*
-     @param fechaStr La fecha como cadena (formato dd/MM/yyyy).
-     @return true si la fecha es válida y no es futura, false si es futura o tiene formato inválido.
+     *Valida si una fecha en formato dd/MM/yyyy no es una fecha futura.*
+     *@param fechaStr La fecha como cadena (formato dd/MM/yyyy).
+     *@return true si la fecha es válida y no es futura, false si es futura o tiene formato inválido.
      */
     public static boolean esFechaValida(String fechaStr) {
         if (fechaStr == null) return false;
