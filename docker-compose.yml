@@ -1,0 +1,29 @@
+version: '1'
+
+services:
+  ms-sre:
+    container_name: ms-sre
+    build: .  # Build desde el Dockerfile en el mismo directorio
+    image: sre-back  # Nombre de la imagen generada
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ares-db-sre:5432/ares-sre
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+    depends_on:
+      - ares-db-sre
+
+  ares-db-sre:
+    container_name: ares-db-sre
+    image: postgres:12.16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ares-sre
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
