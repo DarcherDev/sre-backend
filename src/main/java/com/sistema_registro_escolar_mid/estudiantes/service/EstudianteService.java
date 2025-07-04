@@ -8,7 +8,9 @@ import com.sistema_registro_escolar_mid.estudiantes.mappers.IEstudianteMapper;
 import com.sistema_registro_escolar_mid.estudiantes.model.EstudianteModel;
 import com.sistema_registro_escolar_mid.estudiantes.respositories.IEstudianteRepository;
 import com.sistema_registro_escolar_mid.estudiantes.utilities.EstudianteConstants;
+import com.sistema_registro_escolar_mid.personas.dto.PersonaDto;
 import com.sistema_registro_escolar_mid.personas.service.PersonaService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -83,15 +85,29 @@ public class EstudianteService {
         // realiza las validacion de los campos de los Estudiante
         validateEstudianteDto(estudianteDto);
 
-        this.personaService.createPersona(estudianteDto.getPersona());
+        // Verificar si la matrícula ya existe
+        if(iEstudianteRepository.existsByNumeroMatricula(estudianteDto.getNumeroMatricula())){
+            throw new EstudianteException(
+                    HttpStatus.CONFLICT,
+                    EstudianteConstants.MATRICULA_DUPLICADO
+            );
+        }
+        try {
+            //intenta crea persona primero
+            PersonaDto personaCreada = this.personaService.createPersona(estudianteDto.getPersona());
 
-        // generar el modelo del Estudiante
-        EstudianteModel estudianteModel = this.iEstudianteMapper.toEstudianteModel(estudianteDto);
+            estudianteDto.setPersona(personaCreada); // <- ACTUALIZA el DTO con el ID real
 
-        // guarda el Estudiante
-        estudianteModel = this.iEstudianteRepository.save(estudianteModel);
+            EstudianteModel estudianteModel = this.iEstudianteMapper.toEstudianteModel(estudianteDto);
+            estudianteModel = this.iEstudianteRepository.save(estudianteModel);
 
-        return this.iEstudianteMapper.toEstudianteDto(estudianteModel);
+            return this.iEstudianteMapper.toEstudianteDto(estudianteModel);
+        } catch (DataIntegrityViolationException ex) {
+            throw new EstudianteException(
+                    HttpStatus.CONFLICT,
+                    EstudianteConstants.MATRICULA_DUPLICADO
+            );
+        }
     }
 
     /**
@@ -128,19 +144,39 @@ public class EstudianteService {
         // realiza las validacion de los campos de los Estudiante
         validateEstudianteDto(estudianteDto);
 
-        this.personaService.updatePersona(estudianteDto.getPersona());
+        //optiene lista de matricula
+        Optional<EstudianteModel> estudianteConMismaMatricula = iEstudianteRepository
+                .findByNumeroMatricula(estudianteDto.getNumeroMatricula());
 
-        EstudianteModel existingEstudiante = this.iEstudianteRepository.findById(estudianteDto.getId())
-                .orElseThrow(() -> new EstudianteException(
-                        HttpStatus.NOT_FOUND,
-                        EstudianteConstants.ESTUDIANTE_NOT_FOUND
-                ));
+        //valida que la matricula no este en otro estudiante
+        if(estudianteConMismaMatricula.isPresent() &&
+        !estudianteConMismaMatricula.get().getId().equals(estudianteDto.getId())) {
+            throw new EstudianteException(
+                    HttpStatus.CONFLICT,
+                    EstudianteConstants.MATRICULA_DUPLICADO
+            );
+        }
+        try {
+            // intenta crear estudiante
+            this.personaService.updatePersona(estudianteDto.getPersona());
 
-        EstudianteModel updatedEstudiante = this.iEstudianteMapper.toEstudianteModel(estudianteDto);
+            EstudianteModel existingEstudiante = this.iEstudianteRepository.findById(estudianteDto.getId())
+                    .orElseThrow(() -> new EstudianteException(
+                            HttpStatus.NOT_FOUND,
+                            EstudianteConstants.ESTUDIANTE_NOT_FOUND
+                    ));
 
-        // actualiza el Estudiante
-        updatedEstudiante = this.iEstudianteRepository.save(updatedEstudiante);
-        return Optional.of(this.iEstudianteMapper.toEstudianteDto(updatedEstudiante));
+            EstudianteModel updatedEstudiante = this.iEstudianteMapper.toEstudianteModel(estudianteDto);
+
+            // actualiza el Estudiante
+            updatedEstudiante = this.iEstudianteRepository.save(updatedEstudiante);
+            return Optional.of(this.iEstudianteMapper.toEstudianteDto(updatedEstudiante));
+        }catch (DataIntegrityViolationException ex) {
+            throw new EstudianteException(
+                    HttpStatus.CONFLICT,
+                    EstudianteConstants.MATRICULA_DUPLICADO
+            );
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ import com.sistema_registro_escolar_mid.personas.mappers.IPersonaMapper;
 import com.sistema_registro_escolar_mid.personas.model.PersonaModel;
 import com.sistema_registro_escolar_mid.personas.respositories.IPersonaRepository;
 import com.sistema_registro_escolar_mid.personas.utilities.PersonaConstants;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -45,17 +46,24 @@ public class PersonaService {
      * @throws PersonaException Si hay errores en la validación de los datos.
      */
     public PersonaDto createPersona(PersonaDto personaDto) {
+        try {
+            // realiza las validacion de los campos de los persona
+            validatePersonaDto(personaDto);
 
-        // realiza las validacion de los campos de los persona
-        validatePersonaDto(personaDto);
+            // generar el modelo del persona
+            PersonaModel personaModel = this.iPersonaMapper.toPersonaModel(personaDto);
 
-        // generar el modelo del persona
-        PersonaModel personaModel = this.iPersonaMapper.toPersonaModel(personaDto);
+            // guarda el persona
+            personaModel = this.iPersonaRepository.save(personaModel);
 
-        // guarda el persona
-        personaModel = this.iPersonaRepository.save(personaModel);
-
-        return this.iPersonaMapper.toPersonaDto(personaModel);
+            return this.iPersonaMapper.toPersonaDto(personaModel);
+        }catch (DataIntegrityViolationException ex) {
+            // Captura específica para violación de constraints (como @Unique)
+            throw new PersonaException(
+                    HttpStatus.CONFLICT,
+                    PersonaConstants.CORREO_DUPLICADO
+            );
+        }
     }
 
     /**
@@ -99,6 +107,7 @@ public class PersonaService {
 
         // actualiza el persona
         updatedPersona = this.iPersonaRepository.save(updatedPersona);
+
         return Optional.of(this.iPersonaMapper.toPersonaDto(updatedPersona));
     }
 

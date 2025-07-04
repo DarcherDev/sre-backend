@@ -6,8 +6,8 @@ public class PersonaConstants {
     public static final String APELLIDO_REQUERIDO = "apellido es obligatorio";
     public static final String FECHA_NACIMIENTO_REQUERIDO = "fecha de nacimiento es obligatorio";
     public static final String CORREO_REQUERIDO = "correo es obligatorio";
-    public static final String TELEFONO_REQUERIDO = "telefono es obligatorio";
     public static final String FORMATO_TELEFONO = "telefono deben ser solo numeros";
     public static final String FORMATO_CORREO = "El correo electrónico no tiene un formato válido";
     public static final String FORMATO_FECHA = "El correo electrónico no tiene un formato válido";
+    public static final String CORREO_DUPLICADO = "El correo electrónico ya está registrado";
 }
