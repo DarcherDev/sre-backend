@@ -4,10 +4,7 @@ package com.sistema_registro_escolar_mid.personas.mappers;
 import com.sistema_registro_escolar_mid.common.utilities.Format;
 import com.sistema_registro_escolar_mid.personas.dto.PersonaDto;
 import com.sistema_registro_escolar_mid.personas.model.PersonaModel;
-import org.mapstruct.Named;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class PersonaMapperImpl implements IPersonaMapper {
 

@@ -157,20 +157,27 @@ public class EstudianteService {
             );
         }
         try {
-            // intenta crear estudiante
-            this.personaService.updatePersona(estudianteDto.getPersona());
+            // Actualiza primero la persona y actualiza el DTO con el ID correcto
+            PersonaDto personaActualizada = this.personaService.updatePersona(estudianteDto.getPersona())
+                    .orElseThrow(() -> new EstudianteException(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            EstudianteConstants.PERSONA_NOT_FOUND
+                    ));
+            estudianteDto.setPersona(personaActualizada);
 
+            // Valida que el estudiante exista
             EstudianteModel existingEstudiante = this.iEstudianteRepository.findById(estudianteDto.getId())
                     .orElseThrow(() -> new EstudianteException(
                             HttpStatus.NOT_FOUND,
                             EstudianteConstants.ESTUDIANTE_NOT_FOUND
                     ));
 
+            // Mapea y guarda el estudiante
             EstudianteModel updatedEstudiante = this.iEstudianteMapper.toEstudianteModel(estudianteDto);
-
-            // actualiza el Estudiante
             updatedEstudiante = this.iEstudianteRepository.save(updatedEstudiante);
+
             return Optional.of(this.iEstudianteMapper.toEstudianteDto(updatedEstudiante));
+
         }catch (DataIntegrityViolationException ex) {
             throw new EstudianteException(
                     HttpStatus.CONFLICT,
